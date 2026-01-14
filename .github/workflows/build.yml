@@ -8,21 +8,39 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    
+
     steps:
-      - uses: actions/checkout@v3
-      
-      - uses: dtolnay/rust-toolchain@stable
-      
-      - uses: actions/setup-node@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: '18'
-      
-      - run: npm install
-      
-      - run: npm run tauri build
-      
-      - uses: actions/upload-artifact@v3
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          name: app-windows
+          components: rustfmt, clippy
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Install Tauri CLI
+        run: npm install @tauri-apps/cli --save-dev
+
+      - name: Build Tauri App
+        run: npm run tauri build
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: mbodze-beauty-shop-windows
           path: src-tauri/target/release/bundle/
